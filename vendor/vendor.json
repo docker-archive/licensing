@@ -1,0 +1,85 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "9mLNJYo5jgm1gAFYqCqsGkaVPqQ=",
+			"path": "github.com/Jeffail/gabs",
+			"revision": "c28ac41b517d24bf381d39d5a294fac6536d81fa",
+			"revisionTime": "2016-05-08T10:46:42Z"
+		},
+		{
+			"checksumSHA1": "5gnBrB9ISzgkQe5rLOlFp2MqA/8=",
+			"path": "github.com/asaskevich/govalidator",
+			"revision": "f9ffefc3facfbe0caee3fea233cbb6e8208f4541",
+			"revisionTime": "2018-07-20T11:50:03Z"
+		},
+		{
+			"checksumSHA1": "CSPbwbyzqA6sfORicn4HFtIhF/c=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "8991bc29aa16c548c550c7ff78260e27b9ab7c73",
+			"revisionTime": "2018-02-21T22:46:20Z"
+		},
+		{
+			"checksumSHA1": "7oJyGPn6FhDZeJy9wuWqWSQ5XFM=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "a2c85815a77d0f951e33ba4db5ae93629a1530af",
+			"revisionTime": "2016-04-13T00:36:00Z"
+		},
+		{
+			"checksumSHA1": "sNAU9ojYVUhO6dVXey6T3JhRQpw=",
+			"path": "github.com/docker/libtrust",
+			"revision": "aabc10ec26b754e797f9028f4589c5b7bd90dc20",
+			"revisionTime": "2016-07-08T17:25:13Z"
+		},
+		{
+			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
+			"checksumSHA1": "TvF3ym5sZVNqGlUOS9HgOIl/sZM=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "d41af8bb6a7704f00bc3b7cba9355ae6a5a80048",
+			"revisionTime": "2015-10-28T23:17:19Z"
+		},
+		{
+			"checksumSHA1": "K0crHygPTP42i1nLKWphSlvOQJw=",
+			"path": "github.com/stretchr/objx",
+			"revision": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94",
+			"revisionTime": "2015-09-28T12:21:52Z"
+		},
+		{
+			"checksumSHA1": "5Yq+bWhHXCaqGDuGp8RBj47OhME=",
+			"path": "github.com/stretchr/testify",
+			"revision": "c92828f29518bc633893affbce12904ba41a7cfa",
+			"revisionTime": "2016-01-07T17:53:57Z"
+		},
+		{
+			"checksumSHA1": "s2i8CijF45MhRYEBWoHxvMfXQ0I=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "c92828f29518bc633893affbce12904ba41a7cfa",
+			"revisionTime": "2016-01-07T17:53:57Z"
+		},
+		{
+			"checksumSHA1": "RcfjDEsbIdu/p1dEiNuaIiGsh18=",
+			"path": "github.com/stretchr/testify/http",
+			"revision": "c92828f29518bc633893affbce12904ba41a7cfa",
+			"revisionTime": "2016-01-07T17:53:57Z"
+		},
+		{
+			"checksumSHA1": "RcLvqb7Xw/+2SvoMS/73cdUwWKc=",
+			"path": "github.com/stretchr/testify/mock",
+			"revision": "c92828f29518bc633893affbce12904ba41a7cfa",
+			"revisionTime": "2016-01-07T17:53:57Z"
+		},
+		{
+			"checksumSHA1": "5eoh9/nwLIoMBwfLjZe1CDZwaP4=",
+			"path": "github.com/stretchr/testify/require",
+			"revision": "c92828f29518bc633893affbce12904ba41a7cfa",
+			"revisionTime": "2016-01-07T17:53:57Z"
+		}
+	],
+	"rootPath": "github.com/docker/licensing"
+}
