@@ -29,6 +29,7 @@ type Client interface {
 	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
 	DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error)
 	ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error)
+	StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error
 }
 
 func (c *client) LoginViaAuth(ctx context.Context, username, password string) (authToken string, err error) {
@@ -244,4 +245,8 @@ func (c *client) requestDefaults() []clientlib.RequestOption {
 			req.Client = c.hclient
 		},
 	}
+}
+
+func (c *client) StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error {
+	return StoreLicense(ctx, dclnt, licenses, localRootDir)
 }
