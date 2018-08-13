@@ -7,28 +7,26 @@ import (
 	"github.com/docker/licensing/model"
 )
 
-func (c *client) createAccount(ctx context.Context, dockerID string, request *model.AccountCreationRequest) (response *model.Account, err error) {
+func (c *client) createAccount(ctx context.Context, dockerID string, request *model.AccountCreationRequest) (*model.Account, error) {
 	url := c.baseURI
 	url.Path += "/api/billing/v4/accounts/" + dockerID
 
-	response = new(model.Account)
-	_, _, err = c.doReq(ctx, "PUT", &url, clientlib.SendJSON(request), clientlib.RecvJSON(response))
-	if err != nil {
+	response := new(model.Account)
+	if _, _, err := c.doReq(ctx, "PUT", &url, clientlib.SendJSON(request), clientlib.RecvJSON(response)); err != nil {
 		return nil, err
 	}
 
-	return
+	return response, nil
 }
 
-func (c *client) getAccount(ctx context.Context, dockerID string) (response *model.Account, err error) {
+func (c *client) getAccount(ctx context.Context, dockerID string) (*model.Account, error) {
 	url := c.baseURI
 	url.Path += "/api/billing/v4/accounts/" + dockerID
 
-	response = new(model.Account)
-	_, _, err = c.doReq(ctx, "GET", &url, clientlib.RecvJSON(response))
-	if err != nil {
+	response := new(model.Account)
+	if _, _, err := c.doReq(ctx, "GET", &url, clientlib.RecvJSON(response)); err != nil {
 		return nil, err
 	}
 
-	return
+	return response, nil
 }
