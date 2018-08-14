@@ -77,7 +77,7 @@ func (c *client) VerifyLicense(ctx context.Context, license model.IssuedLicense)
 func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (string, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	if _, err := c.getAccount(ctx, dockerID); err !=nil {
+	if _, err := c.getAccount(ctx, dockerID); err != nil {
 		code, ok := errors.HTTPStatus(err)
 		// create billing account if one is not found
 		if ok && code == http.StatusNotFound {
