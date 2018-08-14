@@ -60,12 +60,12 @@ func (s *Subscription) String() string {
 
 	pcStrs := make([]string, len(s.PricingComponents))
 	for i, pc := range s.PricingComponents {
-		pcStrs[i] = fmt.Sprintf("%s %d", pc.Name, pc.Value)
+		pcStrs[i] = fmt.Sprintf("%d %s", pc.Value, pc.Name)
 	}
-	quantityMsg := strings.Join(pcStrs, ", ")
-	nameMsg := fmt.Sprintf("License Name: %s")
+	quantityMsg := "Quantity: " + strings.Join(pcStrs, ", ")
+	nameMsg := fmt.Sprintf("License Name: %s", s.Name)
 
-	return fmt.Sprintf("%s %s\t%s - %s", nameMsg, quantityMsg, expirationMsg, statusMsg)
+	return fmt.Sprintf("%s\t%s\t%s - %s", nameMsg, quantityMsg, expirationMsg, statusMsg)
 }
 
 // SubscriptionDetail presents Subscription information to billing service clients.
