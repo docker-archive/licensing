@@ -17,10 +17,11 @@ import (
 )
 
 var (
-	LicenseNamePrefix = "com.docker.license"
-	LicenseFilename   = "docker.lic"
+	licenseNamePrefix = "com.docker.license"
+	licenseFilename   = "docker.lic"
 )
 
+// WrappedDockerClient provides methods useful for installing licenses to the wrapped docker engine or cluster
 type WrappedDockerClient interface {
 	NodeList(ctx context.Context, options types.NodeListOptions) ([]swarm.Node, error)
 	ConfigCreate(ctx context.Context, config swarm.ConfigSpec) (types.ConfigCreateResponse, error)
@@ -38,16 +39,16 @@ func StoreLicense(ctx context.Context, clnt WrappedDockerClient, license *model.
 	// First determine if we're in swarm-mode or a stand-alone engine
 	_, err = clnt.NodeList(ctx, types.NodeListOptions{})
 	if err != nil { // TODO - check for the specific error message
-		return WriteLicenseToHost(ctx, clnt, licenseData, rootDir)
+		return writeLicenseToHost(ctx, clnt, licenseData, rootDir)
 	}
 	// Load this in the latest license index
-	latestVersion, err := GetLatestNamedConfig(clnt, LicenseNamePrefix)
+	latestVersion, err := getLatestNamedConfig(clnt, licenseNamePrefix)
 	if err != nil {
 		return fmt.Errorf("unable to get latest license version: %s", err)
 	}
 	spec := swarm.ConfigSpec{
 		Annotations: swarm.Annotations{
-			Name: fmt.Sprintf("%s-%d", LicenseNamePrefix, latestVersion+1),
+			Name: fmt.Sprintf("%s-%d", licenseNamePrefix, latestVersion+1),
 			Labels: map[string]string{
 				"com.docker.ucp.access.label":     "/",
 				"com.docker.ucp.collection":       "swarm",
@@ -70,7 +71,7 @@ func StoreLicense(ctx context.Context, clnt WrappedDockerClient, license *model.
 // given name prefix which have a `-NUM` integer version suffix. Returns the
 // config with the higest version number found or nil if no such configs exist
 // along with its version number.
-func GetLatestNamedConfig(dclient WrappedDockerClient, namePrefix string) (int, error) {
+func getLatestNamedConfig(dclient WrappedDockerClient, namePrefix string) (int, error) {
 	latestVersion := -1
 	// List any/all existing configs so that we create a newer version than
 	// any that already exist.
@@ -101,7 +102,7 @@ func GetLatestNamedConfig(dclient WrappedDockerClient, namePrefix string) (int, 
 	return latestVersion, nil
 }
 
-func WriteLicenseToHost(ctx context.Context, dclient WrappedDockerClient, license []byte, rootDir string) error {
+func writeLicenseToHost(ctx context.Context, dclient WrappedDockerClient, license []byte, rootDir string) error {
 	// TODO we should write the file out over the clnt instead of to the local filesystem
 	return ioutil.WriteFile(filepath.Join(rootDir, LicenseFilename), license, 0644)
 }

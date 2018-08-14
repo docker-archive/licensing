@@ -37,7 +37,25 @@ func (c *client) getSubscription(ctx context.Context, id string) (*model.Subscri
 	return response, nil
 }
 
-func (c *client) listSubscriptions(ctx context.Context, params map[string]string) ([]*model.SubscriptionDetail, error) {
+func (c *client) listSubscriptions(ctx context.Context, params map[string]string) ([]*model.Subscription, error) {
+	values := url.Values{}
+	values.Set("docker_id", params["docker_id"])
+	values.Set("partner_account_id", params["partner_account_id"])
+	values.Set("origin", params["origin"])
+
+	url := c.baseURI
+	url.Path += "/api/billing/v4/subscriptions"
+	url.RawQuery = values.Encode()
+
+	response := make([]*model.Subscription, 0)
+	if _, _, err := c.doReq(ctx, "GET", &url, clientlib.RecvJSON(&response)); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (c *client) listDetailedSubscriptions(ctx context.Context, params map[string]string) ([]*model.SubscriptionDetail, error) {
 	values := url.Values{}
 	values.Set("docker_id", params["docker_id"])
 	values.Set("partner_account_id", params["partner_account_id"])

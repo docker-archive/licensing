@@ -38,6 +38,7 @@ func (c *client) check(ctx context.Context, license model.IssuedLicense) (*model
 		return nil, err
 	}
 
+	// TODO: Mason - replace this parseJWS with a non libtrust lib
 	signature, err := libtrust.ParseJWS(authorization)
 	if err != nil {
 		return nil, errors.Wrapf(err, errors.Fields{

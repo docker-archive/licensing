@@ -6,6 +6,7 @@ import (
 	"runtime"
 )
 
+// Call holds a call frame
 type Call runtime.Frame
 
 // Location is the parsed file, line, and other info we can determine from

@@ -16,17 +16,20 @@ import (
 )
 
 const (
-	TRIAL_PRODUCT_ID   = "docker-ee-trial"
-	TRIAL_RATE_PLAN_ID = "free-trial"
+	trialProductID  = "docker-ee-trial"
+	trialRatePlanID = "free-trial"
 )
 
+// Client represents the licensing package interface, including methods for authentication and interaction with Docker
+// licensing, accounts, and billing services
 type Client interface {
 	LoginViaAuth(ctx context.Context, username, password string) (authToken string, err error)
 	GetHubUserOrgs(ctx context.Context, authToken string) (orgs []model.Org, err error)
 	GetHubUserByName(ctx context.Context, username string) (user *model.User, err error)
 	VerifyLicense(ctx context.Context, license model.IssuedLicense) (res *model.CheckResponse, err error)
 	GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (subscriptionID string, err error)
-	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
+	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.Subscription, err error)
+	ListDetailedSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
 	DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error)
 	ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error)
 	StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error
@@ -102,8 +105,8 @@ func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, do
 	sub, err := c.createSubscription(ctx, &model.SubscriptionCreationRequest{
 		Name:            "Docker Enterprise Free Trial",
 		DockerID:        dockerID,
-		ProductID:       TRIAL_PRODUCT_ID,
-		ProductRatePlan: TRIAL_RATE_PLAN_ID,
+		ProductID:       trialProductID,
+		ProductRatePlan: trialRatePlanID,
 		Eusa: &model.EusaState{
 			Accepted: true,
 		},
@@ -118,10 +121,35 @@ func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, do
 	return sub.ID, nil
 }
 
-func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID string) ([]*model.SubscriptionDetail, error) {
+// ListSubscriptions returns basic descriptions of all subscriptions to docker enterprise products for the given dockerID
+func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID string) ([]*model.Subscription, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
 	subs, err := c.listSubscriptions(ctx, map[string]string{"docker_id": dockerID})
+	if err != nil {
+		return nil, errors.Wrap(err, errors.Fields{
+			"dockerID": dockerID,
+		})
+	}
+
+	// filter out non docker licenses
+	dockerSubs := []*model.Subscription{}
+	for _, sub := range subs {
+		if !strings.HasPrefix(sub.ProductID, "docker-ee") {
+			continue
+		}
+
+		dockerSubs = append(dockerSubs, sub)
+	}
+
+	return dockerSubs, nil
+}
+
+// ListDetailedSubscriptions returns detailed subscriptions to docker enterprise products for the given dockerID
+func (c *client) ListDetailedSubscriptions(ctx context.Context, authToken, dockerID string) ([]*model.SubscriptionDetail, error) {
+	ctx = jwt.NewContext(ctx, authToken)
+
+	subs, err := c.listDetailedSubscriptions(ctx, map[string]string{"docker_id": dockerID})
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"dockerID": dockerID,

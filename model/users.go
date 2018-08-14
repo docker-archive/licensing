@@ -42,6 +42,7 @@ type Org struct {
 	GravatarURL string `json:"gravatar_url,omitempty"`
 }
 
+// PaginationParams is used for specifying pagination in requests to accounts
 type PaginationParams struct {
 	PageSize int
 	Page     int
@@ -61,11 +62,13 @@ type LoginResult struct {
 	Token string `json:"token"`
 }
 
+// LoginRequest holds a hub user's username and password
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+// LoginError wraps both the http error and raw hub login error
 type LoginError struct {
 	*errors.HTTPError
 	// Raw is the raw error from Accounts service
