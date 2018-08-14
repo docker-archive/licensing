@@ -29,7 +29,7 @@ type Client interface {
 	VerifyLicense(ctx context.Context, license model.IssuedLicense) (res *model.CheckResponse, err error)
 	GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (subscriptionID string, err error)
 	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.Subscription, err error)
-	ListDetailedSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
+	ListSubscriptionsDetails(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
 	DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error)
 	ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error)
 	StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error
@@ -146,10 +146,10 @@ func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID stri
 }
 
 // ListDetailedSubscriptions returns detailed subscriptions to docker enterprise products for the given dockerID
-func (c *client) ListDetailedSubscriptions(ctx context.Context, authToken, dockerID string) ([]*model.SubscriptionDetail, error) {
+func (c *client) ListSubscriptionsDetails(ctx context.Context, authToken, dockerID string) ([]*model.SubscriptionDetail, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	subs, err := c.listDetailedSubscriptions(ctx, map[string]string{"docker_id": dockerID})
+	subs, err := c.listSubscriptionsDetails(ctx, map[string]string{"docker_id": dockerID})
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"dockerID": dockerID,

@@ -55,7 +55,7 @@ func (c *client) listSubscriptions(ctx context.Context, params map[string]string
 	return response, nil
 }
 
-func (c *client) listDetailedSubscriptions(ctx context.Context, params map[string]string) ([]*model.SubscriptionDetail, error) {
+func (c *client) listSubscriptionsDetails(ctx context.Context, params map[string]string) ([]*model.SubscriptionDetail, error) {
 	values := url.Values{}
 	values.Set("docker_id", params["docker_id"])
 	values.Set("partner_account_id", params["partner_account_id"])
