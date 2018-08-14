@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"strings"
+
 	validation "github.com/docker/licensing/lib/go-validation"
 )
 
@@ -16,26 +18,62 @@ func (comps PricingComponents) Swap(i, j int) { comps[i], comps[j] = comps[j], c
 // always sorting by name
 func (comps PricingComponents) Less(i, j int) bool { return comps[i].Name < comps[j].Name }
 
+// Subscription includes the base fields that will be meaningful to most of the clients consuming this api
+type Subscription struct {
+	Name               string            `json:"name"`
+	ID                 string            `json:"subscription_id"`
+	DockerID           string            `json:"docker_id"`
+	ProductID          string            `json:"product_id"`
+	CreatedByID        string            `json:"created_by_docker_id"`
+	ProductRatePlan    string            `json:"product_rate_plan"`
+	ProductRatePlanID  string            `json:"product_rate_plan_id"`
+	InitialPeriodStart time.Time         `json:"initial_period_start"`
+	CurrentPeriodStart time.Time         `json:"current_period_start"`
+	CurrentPeriodEnd   *time.Time        `json:"current_period_end,omitempty"`
+	State              string            `json:"state"`
+	Eusa               *EusaState        `json:"eusa,omitempty"`
+	PricingComponents  PricingComponents `json:"pricing_components"`
+}
+
+func (s *Subscription) String() string {
+	storeURL := "https://store.docker.com"
+
+	var expirationMsg, statusMsg string
+	switch s.State {
+	case "cancelled":
+		statusMsg = fmt.Sprintf("Cancelled! You will no longer receive updates. To purchase go to %s", storeURL)
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	case "expired":
+		statusMsg = fmt.Sprintf("Expired! You will no longer receive updates. Please renew at %s", storeURL)
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	case "preparing":
+		statusMsg = "Your subscription has not yet begun"
+		expirationMsg = fmt.Sprintf("Activation date: %s", s.CurrentPeriodStart.Format("2/1/2006"))
+	case "failed":
+		statusMsg = "Oops, this subscription did not get setup properly!"
+		expirationMsg = ""
+	case "active":
+		statusMsg = "License is currently active"
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	default:
+	}
+
+	pcStrs := make([]string, len(s.PricingComponents))
+	for i, pc := range s.PricingComponents {
+		pcStrs[i] = fmt.Sprintf("%d %s", pc.Value, pc.Name)
+	}
+	quantityMsg := "Quantity: " + strings.Join(pcStrs, ", ")
+	nameMsg := fmt.Sprintf("License Name: %s", s.Name)
+
+	return fmt.Sprintf("%s\t%s\t%s - %s", nameMsg, quantityMsg, expirationMsg, statusMsg)
+}
+
 // SubscriptionDetail presents Subscription information to billing service clients.
 type SubscriptionDetail struct {
-	Name               string     `json:"name"`
-	ID                 string     `json:"subscription_id"`
-	DockerID           string     `json:"docker_id"`
-	ProductID          string     `json:"product_id"`
-	CreatedByID        string     `json:"created_by_docker_id"`
-	ProductRatePlan    string     `json:"product_rate_plan"`
-	ProductRatePlanID  string     `json:"product_rate_plan_id"`
-	InitialPeriodStart time.Time  `json:"initial_period_start"`
-	CurrentPeriodStart time.Time  `json:"current_period_start"`
-	CurrentPeriodEnd   *time.Time `json:"current_period_end,omitempty"`
-
-	State       string     `json:"state"`
-	Eusa        *EusaState `json:"eusa,omitempty"`
-	Origin      string     `json:"origin,omitempty"`
-	OrderID     string     `json:"order_id,omitempty"`
-	OrderItemID string     `json:"order_item_id,omitempty"`
-
-	PricingComponents PricingComponents `json:"pricing_components"`
+	Subscription
+	Origin      string `json:"origin,omitempty"`
+	OrderID     string `json:"order_id,omitempty"`
+	OrderItemID string `json:"order_item_id,omitempty"`
 
 	// If true, the product for this subscription uses product keys. To
 	// obtain the keys, the frontend or billing client will need to

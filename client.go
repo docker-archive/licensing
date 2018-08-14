@@ -16,23 +16,26 @@ import (
 )
 
 const (
-	TRIAL_PRODUCT_ID   = "docker-ee-trial"
-	TRIAL_RATE_PLAN_ID = "free-trial"
+	trialProductID  = "docker-ee-trial"
+	trialRatePlanID = "free-trial"
 )
 
+// Client represents the licensing package interface, including methods for authentication and interaction with Docker
+// licensing, accounts, and billing services
 type Client interface {
 	LoginViaAuth(ctx context.Context, username, password string) (authToken string, err error)
 	GetHubUserOrgs(ctx context.Context, authToken string) (orgs []model.Org, err error)
 	GetHubUserByName(ctx context.Context, username string) (user *model.User, err error)
 	VerifyLicense(ctx context.Context, license model.IssuedLicense) (res *model.CheckResponse, err error)
 	GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (subscriptionID string, err error)
-	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
+	ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.Subscription, err error)
+	ListSubscriptionsDetails(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error)
 	DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error)
 	ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error)
 	StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error
 }
 
-func (c *client) LoginViaAuth(ctx context.Context, username, password string) (authToken string, err error) {
+func (c *client) LoginViaAuth(ctx context.Context, username, password string) (string, error) {
 	creds, err := c.login(ctx, username, password)
 	if err != nil {
 		return "", errors.Wrap(err, errors.Fields{
@@ -43,10 +46,10 @@ func (c *client) LoginViaAuth(ctx context.Context, username, password string) (a
 	return creds.Token, nil
 }
 
-func (c *client) GetHubUserOrgs(ctx context.Context, authToken string) (orgs []model.Org, err error) {
+func (c *client) GetHubUserOrgs(ctx context.Context, authToken string) ([]model.Org, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	orgs, err = c.getUserOrgs(ctx, model.PaginationParams{})
+	orgs, err := c.getUserOrgs(ctx, model.PaginationParams{})
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get orgs for user")
 	}
@@ -54,8 +57,8 @@ func (c *client) GetHubUserOrgs(ctx context.Context, authToken string) (orgs []m
 	return orgs, nil
 }
 
-func (c *client) GetHubUserByName(ctx context.Context, username string) (user *model.User, err error) {
-	user, err = c.getUserByName(ctx, username)
+func (c *client) GetHubUserByName(ctx context.Context, username string) (*model.User, error) {
+	user, err := c.getUserByName(ctx, username)
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"username": username,
@@ -65,8 +68,8 @@ func (c *client) GetHubUserByName(ctx context.Context, username string) (user *m
 	return user, nil
 }
 
-func (c *client) VerifyLicense(ctx context.Context, license model.IssuedLicense) (res *model.CheckResponse, err error) {
-	res, err = c.check(ctx, license)
+func (c *client) VerifyLicense(ctx context.Context, license model.IssuedLicense) (*model.CheckResponse, error) {
+	res, err := c.check(ctx, license)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to verify license")
 	}
@@ -74,11 +77,10 @@ func (c *client) VerifyLicense(ctx context.Context, license model.IssuedLicense)
 	return res, nil
 }
 
-func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (subscriptionID string, err error) {
+func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID, email string) (string, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	_, err = c.getAccount(ctx, dockerID)
-	if err != nil {
+	if _, err := c.getAccount(ctx, dockerID); err != nil {
 		code, ok := errors.HTTPStatus(err)
 		// create billing account if one is not found
 		if ok && code == http.StatusNotFound {
@@ -103,8 +105,8 @@ func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, do
 	sub, err := c.createSubscription(ctx, &model.SubscriptionCreationRequest{
 		Name:            "Docker Enterprise Free Trial",
 		DockerID:        dockerID,
-		ProductID:       TRIAL_PRODUCT_ID,
-		ProductRatePlan: TRIAL_RATE_PLAN_ID,
+		ProductID:       trialProductID,
+		ProductRatePlan: trialRatePlanID,
 		Eusa: &model.EusaState{
 			Accepted: true,
 		},
@@ -119,10 +121,35 @@ func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, do
 	return sub.ID, nil
 }
 
-func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID string) (response []*model.SubscriptionDetail, err error) {
+// ListSubscriptions returns basic descriptions of all subscriptions to docker enterprise products for the given dockerID
+func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID string) ([]*model.Subscription, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
 	subs, err := c.listSubscriptions(ctx, map[string]string{"docker_id": dockerID})
+	if err != nil {
+		return nil, errors.Wrap(err, errors.Fields{
+			"dockerID": dockerID,
+		})
+	}
+
+	// filter out non docker licenses
+	dockerSubs := []*model.Subscription{}
+	for _, sub := range subs {
+		if !strings.HasPrefix(sub.ProductID, "docker-ee") {
+			continue
+		}
+
+		dockerSubs = append(dockerSubs, sub)
+	}
+
+	return dockerSubs, nil
+}
+
+// ListDetailedSubscriptions returns detailed subscriptions to docker enterprise products for the given dockerID
+func (c *client) ListSubscriptionsDetails(ctx context.Context, authToken, dockerID string) ([]*model.SubscriptionDetail, error) {
+	ctx = jwt.NewContext(ctx, authToken)
+
+	subs, err := c.listSubscriptionsDetails(ctx, map[string]string{"docker_id": dockerID})
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"dockerID": dockerID,
@@ -142,10 +169,10 @@ func (c *client) ListSubscriptions(ctx context.Context, authToken, dockerID stri
 	return dockerSubs, nil
 }
 
-func (c *client) DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error) {
+func (c *client) DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (*model.IssuedLicense, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	license, err = c.getLicenseFile(ctx, subscriptionID)
+	license, err := c.getLicenseFile(ctx, subscriptionID)
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"subscriptionID": subscriptionID,
@@ -155,10 +182,9 @@ func (c *client) DownloadLicenseFromHub(ctx context.Context, authToken, subscrip
 	return license, nil
 }
 
-func (c *client) ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error) {
-	parsedLicense = &model.IssuedLicense{}
-	err = json.Unmarshal(license, &parsedLicense)
-	if err != nil {
+func (c *client) ParseLicense(license []byte) (*model.IssuedLicense, error) {
+	parsedLicense := &model.IssuedLicense{}
+	if err := json.Unmarshal(license, &parsedLicense); err != nil {
 		return nil, errors.WithMessage(err, "failed to parse license")
 	}
 

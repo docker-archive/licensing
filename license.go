@@ -15,11 +15,16 @@ import (
 	"github.com/docker/licensing/model"
 )
 
-func (c *client) getLicenseFile(ctx context.Context, subID string) (license *model.IssuedLicense, err error) {
+func (c *client) getLicenseFile(ctx context.Context, subID string) (*model.IssuedLicense, error) {
 	url := c.baseURI
 	url.Path += fmt.Sprintf("/api/billing/v4/subscriptions/%s/license-file", subID)
-	_, _, err = c.doReq(ctx, "GET", &url, clientlib.RecvJSON(&license))
-	return
+
+	license := new(model.IssuedLicense)
+	if _, _, err := c.doReq(ctx, "GET", &url, clientlib.RecvJSON(license)); err != nil {
+		return nil, err
+	}
+
+	return license, nil
 }
 
 // Check verifies that the license identified by the given key id is valid. Note that it does not
@@ -33,6 +38,7 @@ func (c *client) check(ctx context.Context, license model.IssuedLicense) (*model
 		return nil, err
 	}
 
+	// TODO: Mason - replace this parseJWS with a non libtrust lib
 	signature, err := libtrust.ParseJWS(authorization)
 	if err != nil {
 		return nil, errors.Wrapf(err, errors.Fields{
@@ -78,8 +84,7 @@ func (c *client) check(ctx context.Context, license model.IssuedLicense) (*model
 	}
 
 	msg := checkRes.Expiration.Format(time.RFC3339)
-	err = checkToken(msg, checkRes.Token, privateKey)
-	if err != nil {
+	if err := checkToken(msg, checkRes.Token, privateKey); err != nil {
 		return nil, errors.Wrap(err, errors.Fields{
 			"key_id": keyID,
 		})
