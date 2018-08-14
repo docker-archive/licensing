@@ -104,5 +104,5 @@ func getLatestNamedConfig(dclient WrappedDockerClient, namePrefix string) (int, 
 
 func writeLicenseToHost(ctx context.Context, dclient WrappedDockerClient, license []byte, rootDir string) error {
 	// TODO we should write the file out over the clnt instead of to the local filesystem
-	return ioutil.WriteFile(filepath.Join(rootDir, LicenseFilename), license, 0644)
+	return ioutil.WriteFile(filepath.Join(rootDir, licenseFilename), license, 0644)
 }
