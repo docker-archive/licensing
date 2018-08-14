@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"strings"
+
 	validation "github.com/docker/licensing/lib/go-validation"
 )
 
@@ -31,6 +33,39 @@ type Subscription struct {
 	State              string            `json:"state"`
 	Eusa               *EusaState        `json:"eusa,omitempty"`
 	PricingComponents  PricingComponents `json:"pricing_components"`
+}
+
+func (s *Subscription) String() string {
+	storeURL := "https://store.docker.com"
+
+	var expirationMsg, statusMsg string
+	switch s.State {
+	case "cancelled":
+		statusMsg = fmt.Sprintf("Cancelled! You will no longer receive updates. To purchase go to %s", storeURL)
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	case "expired":
+		statusMsg = fmt.Sprintf("Expired! You will no longer receive updates. Please renew at %s", storeURL)
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	case "preparing":
+		statusMsg = "Your subscription has not yet begun"
+		expirationMsg = fmt.Sprintf("Activation date: %s", s.CurrentPeriodStart.Format("2/1/2006"))
+	case "failed":
+		statusMsg = "Oops, this subscription did not get setup properly!"
+		expirationMsg = ""
+	case "active":
+		statusMsg = "License is currently active"
+		expirationMsg = fmt.Sprintf("Expiration date: %s", s.CurrentPeriodEnd.Format("2/1/2006"))
+	default:
+	}
+
+	pcStrs := make([]string, len(s.PricingComponents))
+	for i, pc := range s.PricingComponents {
+		pcStrs[i] = fmt.Sprintf("%s %d", pc.Name, pc.Value)
+	}
+	quantityMsg := strings.Join(pcStrs, ", ")
+	nameMsg := fmt.Sprintf("License Name: %s")
+
+	return fmt.Sprintf("%s %s\t%s - %s", nameMsg, quantityMsg, expirationMsg, statusMsg)
 }
 
 // SubscriptionDetail presents Subscription information to billing service clients.
