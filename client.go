@@ -33,6 +33,7 @@ type Client interface {
 	DownloadLicenseFromHub(ctx context.Context, authToken, subscriptionID string) (license *model.IssuedLicense, err error)
 	ParseLicense(license []byte) (parsedLicense *model.IssuedLicense, err error)
 	StoreLicense(ctx context.Context, dclnt WrappedDockerClient, licenses *model.IssuedLicense, localRootDir string) error
+	LoadLocalLicense(ctx context.Context, dclnt WrappedDockerClient) (*model.Subscription, error)
 }
 
 func (c *client) LoginViaAuth(ctx context.Context, username, password string) (string, error) {
