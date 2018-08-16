@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/docker/licensing/model"
 
@@ -119,6 +120,7 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 	// Primary missing piece is how to distinguish from basic, vs std/advanced
 	var productID string
 	var ratePlan string
+	var state string
 	switch strings.ToLower(checkResponse.Tier) {
 	case "internal":
 		productID = "docker-ee-trial"
@@ -131,6 +133,14 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 			ratePlan = "nfr-standard"
 		}
 	}
+
+	// Determine if the license has already expired
+	if checkResponse.Expiration.Before(time.Now()) {
+		state = "expired"
+	} else {
+		state = "active"
+	}
+
 	// Translate the legacy structure into the new Subscription fields
 	return &model.Subscription{
 		// Name
@@ -141,7 +151,7 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 		// ProductRatePlanID
 		// Start
 		Expires: &checkResponse.Expiration,
-		// State
+		State:   state,
 		// Eusa
 		PricingComponents: model.PricingComponents{
 			{
