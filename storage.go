@@ -120,6 +120,10 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 	if err != nil {
 		return nil, err
 	}
+	return checkResponseToSubscription(checkResponse, parsedLicense.KeyID), nil
+}
+
+func checkResponseToSubscription(checkResponse *model.CheckResponse, keyID string) *model.Subscription {
 
 	// TODO - this translation still needs some work
 	// Primary missing piece is how to distinguish from basic, vs std/advanced
@@ -149,7 +153,7 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 	// Translate the legacy structure into the new Subscription fields
 	return &model.Subscription{
 		// Name
-		ID: parsedLicense.KeyID, // This is not actually the same, but is unique
+		ID: keyID, // This is not actually the same, but is unique
 		// DockerID
 		ProductID:       productID,
 		ProductRatePlan: ratePlan,
@@ -164,7 +168,11 @@ func (c *client) LoadLocalLicense(ctx context.Context, clnt WrappedDockerClient)
 				Value: checkResponse.MaxEngines,
 			},
 		},
-	}, nil
+	}
+}
+
+func (c *client) SummarizeLicense(checkResponse *model.CheckResponse, keyID string) *model.Subscription {
+	return checkResponseToSubscription(checkResponse, keyID)
 }
 
 // getLatestNamedConfig looks for versioned instances of configs with the
