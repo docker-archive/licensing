@@ -227,6 +227,22 @@ func (_m *Client) StoreLicense(ctx context.Context, dclnt licensing.WrappedDocke
 	return r0
 }
 
+// SummarizeLicense provides a mock function with given fields: res, keyID
+func (_m *Client) SummarizeLicense(res *model.CheckResponse, keyID string) *model.Subscription {
+	ret := _m.Called(res, keyID)
+
+	var r0 *model.Subscription
+	if rf, ok := ret.Get(0).(func(*model.CheckResponse, string) *model.Subscription); ok {
+		r0 = rf(res, keyID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Subscription)
+		}
+	}
+
+	return r0
+}
+
 // VerifyLicense provides a mock function with given fields: ctx, license
 func (_m *Client) VerifyLicense(ctx context.Context, license model.IssuedLicense) (*model.CheckResponse, error) {
 	ret := _m.Called(ctx, license)
