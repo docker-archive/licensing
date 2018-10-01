@@ -14,6 +14,11 @@ default:
 .PHONY: check
 check: fmt vet lint
 
+.PHONY: test
+test:
+	@echo "============= Go fmt ==============="
+	go test --cover -v ./...
+
 .PHONY: fmt
 fmt:
 	@echo "============= Go fmt ==============="
