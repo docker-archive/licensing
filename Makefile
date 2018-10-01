@@ -16,7 +16,7 @@ check: fmt vet lint
 
 .PHONY: test
 test:
-	@echo "============= Go fmt ==============="
+	@echo "============= Go test ==============="
 	go test --cover -v ./...
 
 .PHONY: fmt
