@@ -4,6 +4,7 @@ LINT_EXCLUDES := vendor|mocks
 .PHONY: default
 default:
 	@echo "Please specify a build target. The choices are:"
+	@echo "		test: run go test
 	@echo "		fmt: run go fmt
 	@echo "		vet: run go vet
 	@echo "		lint: run golint
