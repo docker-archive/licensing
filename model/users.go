@@ -21,10 +21,15 @@ type User struct {
 	Company     string `json:"company,omitempty"`
 	ProfileURL  string `json:"profile_url,omitempty"`
 	GravatarURL string `json:"gravatar_url,omitempty"`
+}
 
+// EmailResult is a struct to hold the email for the user_uuid
+type EmailResult struct {
+	ID       int    `json:"id"`
+	Username string `json:"user"`
 	Email    string `json:"email"`
-	Primary  bool   `json:"primary"`
 	Verified bool   `json:"verified"`
+	Primary  bool   `json:"primary"`
 }
 
 // Org details a Docker organization
