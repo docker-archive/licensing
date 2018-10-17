@@ -83,43 +83,6 @@ func (c *client) VerifyLicense(ctx context.Context, license model.IssuedLicense)
 func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, dockerID string) (string, error) {
 	ctx = jwt.NewContext(ctx, authToken)
 
-	if _, err := c.getAccount(ctx, dockerID); err != nil {
-		code, ok := errors.HTTPStatus(err)
-		// create billing account if one is not found
-		if ok && code == http.StatusNotFound {
-			// grab primary email from user's account
-			emails, err := c.getUserEmailsByToken(ctx)
-			if err != nil {
-				return "", errors.Wrapf(err, errors.Fields{
-					"docker_id": dockerID,
-				}, "failed to obtain user account's email")
-			}
-
-			primaryEmail := ""
-			for _, email := range emails {
-				if email.Primary {
-					primaryEmail = email.Email
-				}
-			}
-
-			_, err = c.createAccount(ctx, dockerID, &model.AccountCreationRequest{
-				Profile: model.Profile{
-					Email: primaryEmail,
-				},
-			})
-			if err != nil {
-				return "", errors.Wrap(err, errors.Fields{
-					"docker_id": dockerID,
-					"email":     primaryEmail,
-				})
-			}
-		} else {
-			return "", errors.Wrap(err, errors.Fields{
-				"docker_id": dockerID,
-			})
-		}
-	}
-
 	sub, err := c.createSubscription(ctx, &model.SubscriptionCreationRequest{
 		Name:            "Docker Enterprise Free Trial",
 		DockerID:        dockerID,
