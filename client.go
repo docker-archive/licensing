@@ -89,7 +89,7 @@ func (c *client) GenerateNewTrialSubscription(ctx context.Context, authToken, do
 		if ok && code == http.StatusNotFound {
 			// grab primary email from user's account
 			emails, err := c.getUserEmailsByToken(ctx)
-			if err != nil || len(emails) == 0 {
+			if err != nil {
 				return "", errors.Wrapf(err, errors.Fields{
 					"docker_id": dockerID,
 				}, "failed to obtain user account's email")
