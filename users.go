@@ -20,15 +20,6 @@ func (c *client) getUserByName(ctx context.Context, username string) (*model.Use
 	return response, err
 }
 
-func (c *client) getUserEmailsByToken(ctx context.Context) ([]model.EmailResult, error) {
-	url := c.baseURI
-	url.Path += "/v2/user/emails/"
-
-	var response []model.EmailResult
-	_, _, err := c.doReq(ctx, "GET", &url, clientlib.RecvJSON(&response))
-	return response, err
-}
-
 func (c *client) getUserOrgs(ctx context.Context, params model.PaginationParams) ([]model.Org, error) {
 	values := url.Values{}
 
