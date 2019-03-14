@@ -76,7 +76,7 @@ func TestClient_GenerateNewTrialSubscription(t *testing.T) {
 		fmt.Fprint(w, fixture("subscription.json"))
 	})
 
-	subID, err := client.GenerateNewTrialSubscription(ctx, testAuthToken, testDockerID, "test@email.com")
+	subID, err := client.GenerateNewTrialSubscription(ctx, testAuthToken, testDockerID)
 	require.NoError(t, err)
 	require.Equal(t, "testSubscriptionID", subID)
 }
