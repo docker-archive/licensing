@@ -11,11 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/licensing/model"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/docker/licensing/model"
 )
 
 var (

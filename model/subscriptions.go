@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/licensing"
 	validation "github.com/docker/licensing/lib/go-validation"
+	"github.com/docker/licensing/types"
 )
 
 // PricingComponents represents a collection of pricing components
@@ -37,20 +37,20 @@ func (s *Subscription) String() string {
 	storeURL := "https://docker.com/licensing"
 
 	var nameMsg, expirationMsg, statusMsg string
-	switch licensing.State(s.State) {
-	case licensing.Cancelled:
+	switch types.State(s.State) {
+	case types.Cancelled:
 		statusMsg = fmt.Sprintf("\tCancelled! You will no longer receive updates. To purchase go to %s", storeURL)
 		expirationMsg = fmt.Sprintf("Expiration date: %s", s.Expires.Format("2006-01-02"))
-	case licensing.Expired:
+	case types.Expired:
 		statusMsg = fmt.Sprintf("\tExpired! You will no longer receive updates. Please renew at %s", storeURL)
 		expirationMsg = fmt.Sprintf("Expiration date: %s", s.Expires.Format("2006-01-02"))
-	case licensing.Preparing:
+	case types.Preparing:
 		statusMsg = "\tYour subscription has not yet begun"
 		expirationMsg = fmt.Sprintf("Activation date: %s", s.Start.Format("2006-01-02"))
-	case licensing.Failed:
+	case types.Failed:
 		statusMsg = "\tOops, this subscription did not get setup properly!"
 		expirationMsg = ""
-	case licensing.Active:
+	case types.Active:
 		statusMsg = "\tLicense is currently active"
 		expirationMsg = fmt.Sprintf("Expiration date: %s", s.Expires.Format("2006-01-02"))
 	default:
