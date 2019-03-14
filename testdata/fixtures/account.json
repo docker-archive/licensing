@@ -1,0 +1,6 @@
+{
+  "docker_id": "testDockerID",
+  "email": "testEmail",
+  "first_name": "testFirstName",
+  "last_name": "testLastName"
+}

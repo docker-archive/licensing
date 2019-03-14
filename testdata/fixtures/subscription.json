@@ -1,0 +1,25 @@
+{
+  "name": "Test Subscription Name",
+  "subscription_id": "testSubscriptionID",
+  "docker_id": "testDockerID",
+  "product_id": "docker-ee",
+  "product_rate_plan": "testProductRatePlan",
+  "product_rate_plan_id": "testProductRatePlanID",
+  "initial_period_start": "2018-08-14T05:13:09Z",
+  "current_period_start": "2018-08-14T05:13:09Z",
+  "current_period_end": "2018-11-12T05:13:09Z",
+  "state": "active",
+  "eusa": {
+    "accepted": true,
+    "accepted_by": "testDockerID",
+    "accepted_on": "2018-08-14T05:13:09Z"
+  },
+  "origin": "docker",
+  "pricing_components": [
+    {
+      "name": "Linux (x86-64) Nodes",
+      "value": 5
+    }
+  ],
+  "marketing_opt_in": false
+}
